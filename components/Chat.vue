@@ -15,22 +15,54 @@
     name: 'chat',
     data() {
       return {
-        messages: ['lol', 'lol2']
+        messages: []
       }
     },
     props: {
       flow: {}
     },
     watch: {
-      flow: function (newVal, oldVal) { // watch it
-        if (newVal.mxGraphModel) {
-          this.messages = newVal.mxGraphModel[0].root[0].mxCell.filter(el => {
-            return typeof el._attr.vertex !== 'undefined'
-          }).map(el => {
-            return el._attr.value._value
-          })
-          console.log(this.messages)
-
+      flow: function (newVal) {
+        if (newVal.cells) {
+          const edges = Object.values(newVal.cells).filter(cell =>
+            cell.edge === true);
+          const vertexes = Object.values(newVal.cells).filter(cell =>
+            cell.vertex === true);
+          const messages = vertexes.map((el, i) => {
+            if (typeof el.vertex !== 'undefined') {
+              return {
+                message: el.value,
+                id: el.id,
+                type: 'bot_message'
+              }
+            }
+          });
+          this.messages = [];
+          messages.forEach((el) => {
+            const vertexWithEdge = edges.filter(e => e.source.id === el.id);
+            this.messages.push(el);
+            if (vertexWithEdge.length > 0) {
+              const buttons = [];
+              vertexWithEdge.forEach(edge => {
+                if (edge.value.type === 'user_button') {
+                  buttons.push({
+                      type: edge.value.type,
+                      message: edge.value.value,
+                    }
+                  )
+                } else {
+                  this.messages.push({
+                      type: edge.value.type,
+                      message: edge.value.value,
+                    }
+                  )
+                }
+              });
+              if (buttons.length > 0) {
+                this.messages.push(buttons)
+              }
+            }
+          });
         }
       }
     },

@@ -3,7 +3,7 @@
     <div ref="graphContainer"
          style="position:relative;overflow:hidden;width:100%;height:100vh;background:#EEE;cursor:default;">
     </div>
-    <chat :flow="json"/>
+    <chat :flow="flow"/>
   </section>
 </template>
 <script>
@@ -14,7 +14,7 @@
     components: {Chat},
     data() {
       return {
-        json: {}
+        flow: {}
       }
     },
     methods: {
@@ -22,8 +22,7 @@
         const encoder = new mxCodec();
         const node = encoder.encode(graph.getModel());
         const testString = mxUtils.getXml(node);   // fetch xml (string or document/node)
-        var result = xmlToJSON.parseString(testString);   // parses to JSON object
-        return result;
+        return xmlToJSON.parseString(testString);
       }
     },
     mounted() {
@@ -45,17 +44,25 @@
         // is normally the first child of the root (ie. layer 0).
         const parent = graph.getDefaultParent();
 
+        graph.getLabel = function (state) {
+          const label = mxGraph.prototype.getLabel.apply(this, arguments);
+          if (state.edge) {
+            return state.value.value;
+          } else {
+            return label;
+          }
+        };
+
         // Adds cells to the model in a single step
         graph.getModel().beginUpdate();
         try {
           const v1 = graph.insertVertex(parent, null, 'Flow 1', 20, 20, 80, 30);
           const v2 = graph.insertVertex(parent, null, 'Flow 2', 200, 150, 80,
             30);
-          const e1 = graph.insertEdge(parent, null, '', v1, v2);
-          console.log(parent);
+          const edgeValue = {type: "user_message", value: "EDGE VALUE"}
+          graph.insertEdge(parent, null, edgeValue, v1, v2);
         }
         finally {
-          // Updates the display
           graph.getModel().endUpdate();
         }
         this.json = this.getJson(graph);
@@ -66,18 +73,35 @@
         // Installs context menu
         let self_ = this;
         graph.popupMenuHandler.factoryMethod = function (menu, cell, evt) {
-          menu.addItem('Add bot response', null, function () {
+          /**
+           * Add message from bot triggered by a NLU
+           **/
+          menu.addItem('Add bot response (NLU)', null, function () {
             graph.getModel().beginUpdate();
-            console.log(cell);
-            const vertex = graph.insertVertex(parent, null, 'New Flow', 50, 50,
-              50, 50);
-            graph.insertEdge(parent, null, '', cell, vertex);
+            const message = window.prompt('Message from user?');
+            const vertex = graph.insertVertex(parent, null,
+              'New message', 50, 50, 50, 50);
+            const edgeValue = {type: "user_message", value: message};
+            graph.insertEdge(parent, null, edgeValue, cell, vertex);
             graph.getModel().endUpdate();
-            self_.json = self_.getJson(graph);
+          });
+          /**
+           * Add message from bot triggered by a quick reply
+           **/
+          menu.addItem('Add bot response (Bot response)', null, function () {
+            graph.getModel().beginUpdate();
+            const message = window.prompt('Message from user?');
+            const vertex = graph.insertVertex(parent, null,
+              'New message', 50, 50, 50, 50);
+            const edgeValue = {type: "user_button", value: message};
+            edgeValue.toString = () => edgeValue.value;
+            graph.insertEdge(parent, null, edgeValue, cell, vertex);
+            graph.getModel().endUpdate();
           });
 
-          menu.addItem('Dump json', null, function () {
+          menu.addItem('Show conversation', null, function () {
             console.log(JSON.stringify(self_.getJson(graph), null, 4));
+
           });
 
           /**
@@ -92,14 +116,14 @@
            **/
         };
         graph.getModel().addListener(mxEvent.CHANGE, function (sender, evt) {
+          console.log(graph.getModel());
           graph.getModel().beginUpdate();
           evt.consume();
-          self_.json = self_.getJson(graph)
+          console.log('update');
           graph.getModel().endUpdate();
+          self_.flow = Object.assign({}, graph.getModel());
         });
       }
-
-
     }
   }
 </script>
