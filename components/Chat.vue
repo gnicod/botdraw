@@ -1,10 +1,14 @@
 <template>
-  <div>
+  <div class="flex">
     <message v-for="m in messages" :message="m" :key="m.i"/>
   </div>
 </template>
 
 <style lang="less" type="text/less" scoped>
+.flex {
+  display: flex;
+  flex-direction: column;
+}
 </style>
 
 <script>
