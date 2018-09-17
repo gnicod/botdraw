@@ -104,12 +104,12 @@ export default {
               menu.addItem("Add bot response", null, function() {
                 graph.getModel().beginUpdate();
                 const response = window.prompt("response class?");
-                const botResponse = new BotResponse(response);
+                const botResponse = new BotResponse(response, "lol mesage");
                 botResponse.insertIntoGraph(graph, parent);
                 botResponse.addReplyButton("ok");
                 botResponse.addInlineButton("nop", "damn_action");
                 const message = window.prompt("Quick reply?");
-                const edgeValue = { type: "user_button", value: message };
+                const edgeValue = { type: "nlu", value: message };
                 edgeValue.toString = () => edgeValue.value;
                 graph.insertEdge(
                   parent,
@@ -128,9 +128,10 @@ export default {
                 const response = window.prompt("response class?");
                 const botResponse = new BotResponse(response);
                 botResponse.insertIntoGraph(graph, parent);
+                console.log("cell clicked", cell)
                 const edgeValue = {
-                  type: "user_button",
-                  value: cell.getAttribute("value")
+                  type: "nlu",
+                  value: cell.value.getAttribute("label")
                 };
                 graph.insertEdge(
                   parent,

@@ -21,20 +21,27 @@ export const formatValue = (label, type, extras = {}) => {
   return node;
 }
 
+
+
 export const generateRecipe = (model) => {
   function getDest(cell) {
     let cellIds = []
-    const dests = []
+    const dests = {}
     if (cell.children) {
-      cellIds = cell.children.filter(el => el.value.getAttribute("type") == 'InlineButton' || el.value.getAttribute("type") == 'ReplyButton').map(el => el.getId())
+      cellIds = cell.children
+      .filter(el => el.value.getAttribute("type") == 'InlineButton' || el.value.getAttribute("type") == 'ReplyButton')
+      .map(el => el.id)
     }
     cellIds.push(cell.id)
     console.log(cellIds)
     for (const i in cell.edges) {
       const edge = cell.edges[i]
-      console.log("FUUUU ", cellIds, edge.target.id, cellIds.indexOf(String(edge.target.id)))
-      if (cellIds.indexOf(String(edge.target.id)) >= 0) {
-        dests.push(edge.target.value.getAttribute('label'))
+      console.log(edge)
+      if (cellIds.indexOf(String(edge.source.id)) >= 0) {
+        dests[edge.target.value.getAttribute('label')] = {
+          type: edge.value.type,
+          value: edge.value.value,
+        }
       }
     }
     return dests
@@ -51,7 +58,7 @@ export const generateRecipe = (model) => {
       recipes['states'][label] = {
         'text': label
       }
-      // console.log(type, label, cell.id)
+      let dests = {}
       if (cell.children) {
         const reply_buttons = cell.children.filter(elt => {
           if (typeof elt.value == 'undefined') { return false }
@@ -70,11 +77,14 @@ export const generateRecipe = (model) => {
         })
         recipes['states'][label]['reply_keyboard'] = [reply_buttons]
         recipes['states'][label]['inline_keyboard'] = [inline_buttons]
+        cell.children.forEach(ch => {
+          dests = Object.assign( {}, dests, getDest(ch))
+        })
       }
-
-      console.log('dests', getDest(cell))
+      dests = Object.assign( {}, dests, getDest(cell))
+      recipes['states'][label]['dest'] = dests
     }
 
   }
-  console.log(JSON.stringify(recipes))
+  console.log(JSON.stringify(recipes, null, 2))
 }
