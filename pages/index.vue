@@ -10,7 +10,7 @@
 </template>
 <script>
 import Chat from "../components/Chat";
-import { cloneCell } from "../utils.js";
+import { cloneCell, generateRecipe } from "../utils.js";
 import BotResponse from "../models/BotResponse.js";
 
 export default {
@@ -107,7 +107,7 @@ export default {
                 const botResponse = new BotResponse(response);
                 botResponse.insertIntoGraph(graph, parent);
                 botResponse.addReplyButton("ok");
-                botResponse.addInnlineButton("nop");
+                botResponse.addInlineButton("nop", "damn_action");
                 const message = window.prompt("Quick reply?");
                 const edgeValue = { type: "user_button", value: message };
                 edgeValue.toString = () => edgeValue.value;
@@ -150,6 +150,7 @@ export default {
         }
         menu.addItem("Show conversation", null, function() {
                 const model = graph.getModel();
+                generateRecipe(model)
                 console.log(model.cells)
         });
       };

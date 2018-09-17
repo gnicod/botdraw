@@ -22,7 +22,9 @@ export default class BotResponse {
     var field = new mxCell(formatValue('','ButtonLine'), new mxGeometry(0, posY, this.vertexWith, this.heightItem), 'text;strokeColor=#0011ff;fillColor=none;align=left;verticalAlign=bottom;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;');
     field.vertex = true;
     this.buttons.push(field);
-    this.vertex.insert(cloneCell(field, formatValue(name, 'ReplyButton')));
+    const cloned = cloneCell(field, formatValue(name, 'ReplyButton'))
+    cloned.id =  this.vertex.id + '-' + this.buttons.length
+    this.vertex.insert(cloned);
   }
 
   addInlineButton(name, action) {
@@ -30,7 +32,9 @@ export default class BotResponse {
     var field = new mxCell(formatValue('','ButtonLine'), new mxGeometry(0, posY, this.vertexWith, this.heightItem), 'text;strokeColor=#0011ff;fillColor=none;align=left;verticalAlign=bottom;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;');
     field.vertex = true;
     this.buttons.push(field);
-    this.vertex.insert(cloneCell(field, formatValue(name, 'ReplyButton', {action})));
+    const cloned = cloneCell(field, formatValue(name, 'InlineButton', {action}))
+    cloned.id =  this.vertex.id + '-' + this.buttons.length
+    this.vertex.insert(cloned);
   }
 
 }
