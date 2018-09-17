@@ -144,6 +144,27 @@ export default {
                 graph.getModel().endUpdate();
               });
               break;
+            case "InlineButton":
+              menu.addItem("Add bot response", null, function() {
+                graph.getModel().beginUpdate();
+                const response = window.prompt("response class?");
+                const botResponse = new BotResponse(response);
+                botResponse.insertIntoGraph(graph, parent);
+                console.log("cell clicked", cell)
+                const edgeValue = {
+                  type: "action",
+                  value: cell.value.getAttribute("action")
+                };
+                graph.insertEdge(
+                  parent,
+                  null,
+                  edgeValue,
+                  cell,
+                  botResponse.vertex,
+                  "edgeStyle=orthogonalEdgeStyle"
+                );
+                graph.getModel().endUpdate();
+              });
               break;
             default:
             break;

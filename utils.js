@@ -75,8 +75,8 @@ export const generateRecipe = (model) => {
             action: el.value.getAttribute('action'),
           }
         })
-        recipes['states'][label]['reply_keyboard'] = [reply_buttons]
-        recipes['states'][label]['inline_keyboard'] = [inline_buttons]
+        recipes['states'][label]['reply_keyboards'] = [reply_buttons]
+        recipes['states'][label]['inline_keyboards'] = [inline_buttons]
         cell.children.forEach(ch => {
           dests = Object.assign( {}, dests, getDest(ch))
         })
